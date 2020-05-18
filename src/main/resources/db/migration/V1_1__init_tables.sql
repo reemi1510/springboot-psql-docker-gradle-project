@@ -1,0 +1,3 @@
+create schema if not exists projectdb;
+
+--Create tables here...

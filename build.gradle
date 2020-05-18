@@ -4,6 +4,8 @@ plugins {
 	id 'java'
 }
 
+def jarName = 'project.jar'
+
 group = 'com.project'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
@@ -33,4 +35,8 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+}
+
+bootJar {
+	archiveName(jarName)
 }

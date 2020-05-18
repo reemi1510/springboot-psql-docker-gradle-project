@@ -1,0 +1,36 @@
+version: "3"
+services:
+  postgres:
+    build:
+      context: database
+    #    image: postgres:latest
+    network_mode: bridge
+    container_name: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres
+    restart: unless-stopped
+  # APP*****************************************
+  projectapp:
+    build:
+      context: .
+    image: project:latest
+    network_mode: bridge
+    container_name: project
+    expose:
+      - 8080
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    links:
+      - postgres
+volumes:
+  postgres-data:
