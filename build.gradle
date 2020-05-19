@@ -4,6 +4,8 @@ plugins {
 	id 'java'
 }
 
+apply plugin: 'idea'
+
 def jarName = 'project.jar'
 
 group = 'com.project'
@@ -16,6 +18,48 @@ configurations {
 	}
 }
 
+sourceSets {
+	integrationTest {
+		java {
+			compileClasspath += main.output + test.output
+			runtimeClasspath += main.output + test.output
+			srcDir file('src/integrationTest/java')
+		}
+		resources.srcDir file('src/integrationTest/resources')
+	}
+
+	functionalTest {
+		java {
+			compileClasspath += main.output + test.output
+			runtimeClasspath += main.output + test.output
+			srcDir file('src/functionalTest/java')
+		}
+		resources.srcDir file('src/functionalTest/resources')
+	}
+}
+
+idea {
+	module {
+		testSourceDirs += project.sourceSets.integrationTest.java.srcDirs
+		testResourceDirs += project.sourceSets.integrationTest.resources.srcDirs
+		scopes.TEST.plus += [ configurations.integrationTestCompile ]
+	}
+}
+
+configurations {
+	integrationTestCompile.extendsFrom testCompile
+	integrationTestRuntime.extendsFrom testRuntime
+	functionalTestCompile.extendsFrom testCompile
+	functionalTestRuntime.extendsFrom testRuntime
+}
+
+task integrationTest(type: Test, description: 'Runs the integration tests.', group: 'verification') {
+	testClassesDirs = sourceSets.integrationTest.output.classesDirs
+	classpath = sourceSets.integrationTest.runtimeClasspath
+	outputs.upToDateWhen { false }
+	mustRunAfter test
+}
+
 repositories {
 	mavenCentral()
 }
@@ -25,12 +69,20 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.flywaydb:flyway-core'
+	testImplementation 'org.testcontainers:postgresql:1.14.2'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+	testCompile "org.testcontainers:testcontainers:1.14.1"
+
+	integrationTestCompile sourceSets.main.runtimeClasspath
+	integrationTestCompile sourceSets.test.runtimeClasspath
+
+	functionalTestCompile sourceSets.main.runtimeClasspath
+	functionalTestCompile sourceSets.test.runtimeClasspath
 }
 
 test {
